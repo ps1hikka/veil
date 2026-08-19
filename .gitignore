@@ -1,0 +1,23 @@
+# Go
+/bin/
+/dist/
+/vendor/
+*.exe
+*.test
+*.out
+
+# Rust
+/target/
+
+# Secrets & local configs
+.env
+*.pem
+*.key
+config/local.*
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+tmp/
