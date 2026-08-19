@@ -1,0 +1,19 @@
+services:
+  reality:
+    build: ./reality
+    volumes:
+      - sock:/tmp
+    restart: unless-stopped
+
+  gateway:
+    build: ./gateway
+    ports:
+      - "443:443"
+    volumes:
+      - sock:/tmp
+    depends_on:
+      - reality
+    restart: unless-stopped
+
+volumes:
+  sock:
