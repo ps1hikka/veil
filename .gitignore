@@ -21,3 +21,4 @@ config/local.*
 # Logs
 *.log
 tmp/
+gateway/.idea/
