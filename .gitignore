@@ -23,3 +23,4 @@ config/local.*
 tmp/
 gateway/.idea/
 config/config.json
+reality/.idea/

@@ -1,33 +1,32 @@
-use std::fs;
-use std::io::{Read, Write};
-use std::os::unix::net::UnixListener;
+use std::io::{self, copy};
+use std::net::{TcpListener, TcpStream};
+use std::thread;
 
-fn main() {
-    let path = "/tmp/reality.sock";
-    let _ = fs::remove_file(path);
-
-    let listener = UnixListener::bind(path).expect("failed to bind socket");
-    println!("reality listening on {}", path);
+fn main() -> io::Result<()> {
+    let listener = TcpListener::bind("0.0.0.0:443")?;
+    println!("listening on 0.0.0.0:443 → gateway:8443");
 
     for stream in listener.incoming() {
-        match stream {
-            Ok(mut stream) => {
-                std::thread::spawn(move || {
-                    let mut buf = [0u8; 4096];
-                    loop {
-                        match stream.read(&mut buf) {
-                            Ok(0) => break,
-                            Ok(n) => {
-                                if stream.write_all(&buf[..n]).is_err() {
-                                    break;
-                                }
-                            }
-                            Err(_) => break,
-                        }
-                    }
-                });
+        let client = stream?;
+        thread::spawn(move || {
+            if let Err(e) = pipe(client, "gateway:8443") {
+                eprintln!("pipe error: {e}");
             }
-            Err(e) => eprintln!("accept error: {}", e),
-        }
+        });
     }
+    Ok(())
+}
+
+fn pipe(mut client: TcpStream, backend: &str) -> io::Result<()> {
+    let mut backend = TcpStream::connect(backend)?;
+
+    let mut client2 = client.try_clone()?;
+    let mut backend2 = backend.try_clone()?;
+
+    let t1 = thread::spawn(move || copy(&mut client, &mut backend));
+    let t2 = thread::spawn(move || copy(&mut backend2, &mut client2));
+
+    t1.join().unwrap()?;
+    t2.join().unwrap()?;
+    Ok(())
 }

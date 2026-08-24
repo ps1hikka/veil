@@ -1,19 +1,22 @@
 services:
-  reality:
-    build: ./reality
-    volumes:
-      - sock:/tmp
-    restart: unless-stopped
-
   gateway:
     build: ./gateway
+    volumes:
+      - sock:/tmp
+      - ./config:/config
+    expose:
+      - "8443"
+    restart: unless-stopped
+
+  reality:
+    build: ./reality
     ports:
       - "443:443"
     volumes:
       - sock:/tmp
       - ./config:/config
     depends_on:
-      - reality
+      - gateway
     restart: unless-stopped
 
 volumes:

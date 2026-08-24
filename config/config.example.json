@@ -6,5 +6,12 @@
       "id": "00000000-0000-0000-0000-000000000001",
       "flow": "xtls-rprx-vision"
     }
-  ]
+  ],
+  "reality": {
+      "listen": ":443",
+      "private_key": "CHANGE_ME_PRIVATE_KEY",
+      "short_ids": ["0123456789abcdef"],
+      "server_names": ["www.microsoft.com"],
+      "dest": "www.microsoft.com:443"
+    }
 }
