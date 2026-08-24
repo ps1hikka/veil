@@ -1,29 +1,32 @@
 package proxy
 
 import (
+	"fmt"
 	"io"
 	"net"
+	"time"
 
 	"gateway/internal/session"
 )
 
-func PipeToReality(sess *session.Session, sockPath string) error {
-	unix, err := net.Dial("unix", sockPath)
+func Handle(sess *session.Session) error {
+	target := fmt.Sprintf("%s:%d", sess.Header.Address, sess.Header.Port)
+
+	dest, err := net.DialTimeout("tcp", target, 5*time.Second)
 	if err != nil {
-		return err
+		return fmt.Errorf("dial %s: %w", target, err)
 	}
-	defer unix.Close()
-	defer sess.Conn.Close()
+	defer dest.Close()
 
 	errCh := make(chan error, 2)
 
 	go func() {
-		_, err := io.Copy(unix, sess.Conn)
+		_, err := io.Copy(dest, sess.Conn)
 		errCh <- err
 	}()
 
 	go func() {
-		_, err := io.Copy(sess.Conn, unix)
+		_, err := io.Copy(sess.Conn, dest)
 		errCh <- err
 	}()
 

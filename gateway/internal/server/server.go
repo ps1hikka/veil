@@ -56,7 +56,7 @@ func handle(conn net.Conn, cfg config.Config, a *auth.Authenticator) {
 	)
 
 	sess := session.New(conn, header, client)
-	if err := proxy.PipeToReality(sess, cfg.RealitySock); err != nil {
+	if err := proxy.Handle(sess); err != nil {
 		log.Println("proxy:", err)
 	}
 }
